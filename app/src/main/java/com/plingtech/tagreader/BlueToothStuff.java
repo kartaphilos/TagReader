@@ -146,8 +146,17 @@ public class BlueToothStuff {
         if (Objects.equals(result.getBleDevice().getName(), tagDeviceName)) {
             Log.i(TAG, "Scan: Tag Reader found");
             bleDevice = result.getBleDevice();
-            connectTagReader();
+            connectionStateWatcher(); //Setup watcher for BLE connection state changes
+            connectTagReader(); // Connect to reader
         }
+    }
+
+    private void connectionStateWatcher () {
+        Log.i(TAG, "BLE connection state change setup");
+        // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
+        connStateDisposable = bleDevice.observeConnectionStateChanges()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onConnectionStateChange, this::onConnectionStateFailure);
     }
 
     // Connect & Subscribe
@@ -159,16 +168,7 @@ public class BlueToothStuff {
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::disposeConnection)
                 .subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
-        connectionStateWatcher(); //Setup watcher for BLE connection state changes
         Log.d(TAG, "BLE connectTagReader finish");
-    }
-
-    private void connectionStateWatcher () {
-        Log.i(TAG, "BLE connection state change setup");
-        // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
-        connStateDisposable = bleDevice.observeConnectionStateChanges()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onConnectionStateChange, this::onConnectionStateFailure);
     }
 
     private void subscribeToTagsRead(RxBleDeviceServices services) {
