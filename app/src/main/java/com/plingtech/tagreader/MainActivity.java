@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         bt = new BlueToothStuff();
         Log.d(TAG, "Setup rxBle Logging");
         bt.btLogging();
-        Log.d(TAG, "Get permissions");
+        Log.d(TAG, "Get permissions"); //TODO: Its an observable so perms won't complete for a long time. Will fail on new app
         bt.btPermissions();
         Log.d(TAG, "Start BLE scan & connect");
         //TODO: Make observable and subscribe to result for device &/or connection
