@@ -174,6 +174,10 @@ public class BlueToothStuff {
     private void subscribeToTagsRead(RxBleDeviceServices services) {
         Log.d(TAG, "Entering subscribeToTagsRead()");
         Log.d(TAG, "Starting Subscribe on characteristic");
+        if (isConnected()) {
+            Log.i(TAG, "Connection exists. discard and reconnect?");
+            disposeConnection();
+        }
         connectionDisposable = bleDevice.establishConnection(true)
                 .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
                 //.doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
@@ -185,11 +189,12 @@ public class BlueToothStuff {
     }
 
     private void onNotificationReceived(byte[] bytes) {
-        Log.i(TAG, "Data from TagReader: "+Arrays.toString(bytes));
+        Log.i(TAG, "Data from TagReader: "+ new String(bytes));
         //Snackbar.make(findViewById(R.id.content), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_SHORT).show();
     }
 
     // Reconnect logic
+    //TODO: Figure out how to do automagic reconnects (if library doesn't do it). Also if scan fails so re-run scan
 
     // OnErrors
     private void onScanFailure(Throwable throwable) {

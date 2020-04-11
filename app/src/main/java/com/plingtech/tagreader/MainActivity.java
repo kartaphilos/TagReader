@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Get permissions");
         bt.btPermissions();
         Log.d(TAG, "Start BLE scan & connect");
-        //TODO: Make observable and subcsribe to result for device &/or connection
+        //TODO: Make observable and subscribe to result for device &/or connection
         bt.scanBleDevices();
     }
 
