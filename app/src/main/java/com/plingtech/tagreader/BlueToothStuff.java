@@ -90,6 +90,7 @@ public class BlueToothStuff {
                 .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
                 .setUuidsLogSetting(LogConstants.UUIDS_FULL)
                 .setShouldLogAttributeValues(true)
+                .setShouldLogScannedPeripherals(true)
                 .build()
         );
     }
@@ -119,8 +120,8 @@ public class BlueToothStuff {
         scanDisposable = rxBleClient.scanBleDevices(
                 new ScanSettings.Builder()
                         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                        .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
+                        .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                        //.setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
                         .build(),
                 new ScanFilter.Builder()
                         //.setDeviceAddress("30:AE:A4:74:BE:AE")
@@ -142,9 +143,11 @@ public class BlueToothStuff {
         // Process scan result here.
         Log.i(TAG,"BLE Scan - something found");
         Log.i(TAG, "Scanned Device: "+result.getBleDevice());
-        if (Objects.equals(result.getBleDevice().getName(), tagDeviceName))
+        if (Objects.equals(result.getBleDevice().getName(), tagDeviceName)) {
             Log.i(TAG, "Scan: Tag Reader found");
-        bleDevice = result.getBleDevice();
+            bleDevice = result.getBleDevice();
+            connectTagReader();
+        }
     }
 
     // Connect & Subscribe

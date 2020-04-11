@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -18,18 +19,17 @@ public class MainActivity extends AppCompatActivity {
     BlueToothStuff bt;
     private static final String TAG = "TagMainActivity";
     private static Context context;
+    RxBleClient rxBleClient;
 
     public static Context getAppContext() {
         return MainActivity.context;
     }
 
     // Singleton of rxBleClient ?
-    /*
-    public static RxBleClient getRxBleClient(Context context) {
-        MainActivity application = (MainActivity) context.getApplicationContext();
-        return application.rxBleClient;
+    public  RxBleClient getRxBleClient(Context context) {
+        MainActivity activity = MainActivity.this;
+        return activity.rxBleClient;
     }
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,16 +47,16 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
-        MainActivity.context = getApplicationContext();
-
+        Log.d(TAG, "getActivity context?");
+        MainActivity.context = this;
         Log.d(TAG, "Create btStuff singleton");
         bt = new BlueToothStuff();
         Log.d(TAG, "Setup rxBle Logging");
         bt.btLogging();
         Log.d(TAG, "Get permissions");
         bt.btPermissions();
-        Log.d(TAG, "Start BLE scan");
+        Log.d(TAG, "Start BLE scan & connect");
+        //TODO: Make observable and subcsribe to result for device &/or connection
         bt.scanBleDevices();
     }
 
