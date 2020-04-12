@@ -43,13 +43,7 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(fabv -> Snackbar.make(fabv,
                 "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
-        /*
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        */
         Log.d(TAG, "getActivity context?");
         MainActivity.context = this;
         Log.d(TAG, "Create btStuff singleton");

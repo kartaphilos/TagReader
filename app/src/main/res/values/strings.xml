@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Tag Reader</string>
     <!-- Strings for dots menu -->
+    <string name="bt_status">BT Status</string>
     <string name="action_newsession">New Session</string>
     <string name="action_savesession">Save Session</string>
     <string name="action_copy">Copy Tags to Clipboard</string>

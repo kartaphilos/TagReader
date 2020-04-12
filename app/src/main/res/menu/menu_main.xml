@@ -3,23 +3,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.plingtech.tagreader.MainActivity">
     <item
+        android:id="@+id/bt_status"
+        android:icon="@android:drawable/stat_sys_data_bluetooth"
+        android:title="@string/bt_status"
+        app:showAsAction="always"
+        />
+    <item
         android:id="@+id/new_session"
-        android:title="@string/action_newsession" />
+        android:title="@string/action_newsession"
+        app:showAsAction="never"
+        />
     <item
         android:id="@+id/save_session"
-        android:title="@string/action_savesession" />
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="@string/action_savesession"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/copy_session"
-        android:title="@string/action_copy" />
+        android:icon="?attr/actionModeCopyDrawable"
+        android:title="@string/action_copy"
+        app:showAsAction="never" />
     <item
         android:id="@+id/device_info"
-        android:title="@string/action_device_info" />
+        android:title="@string/action_device_info"
+        app:showAsAction="ifRoom"
+        />
     <item
         android:id="@+id/debug"
-        android:title="@string/action_debug" />
+        android:title="@string/action_debug"
+        app:showAsAction="never"
+        />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
-        app:showAsAction="never" />
+        app:showAsAction="never"
+        />
 </menu>
