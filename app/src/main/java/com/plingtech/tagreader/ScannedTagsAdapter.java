@@ -21,14 +21,14 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(android.R.id.text1)
+        //@BindView(android.R.id.text1)
         TextView line1;
-        @BindView(android.R.id.text2)
+        //@BindView(android.R.id.text2)
         TextView line2;
 
         ViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+            //ButterKnife.bind(this, itemView);
         }
     }
 
