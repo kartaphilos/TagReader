@@ -39,20 +39,16 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-
+        setSupportActionBar(binding.toolbar);
+        binding.fab.setOnClickListener(fabv -> Snackbar.make(fabv,
+                "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
         /*
-        //setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         */
         Log.d(TAG, "getActivity context?");
         MainActivity.context = this;

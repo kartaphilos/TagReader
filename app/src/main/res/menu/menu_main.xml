@@ -3,11 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.plingtech.tagreader.MainActivity">
     <item
-        android:id="@+id/newsession"
+        android:id="@+id/new_session"
         android:title="@string/action_newsession" />
+    <item
+        android:id="@+id/save_session"
+        android:title="@string/action_savesession" />
     <item
         android:id="@+id/copy_session"
         android:title="@string/action_copy" />
+    <item
+        android:id="@+id/device_info"
+        android:title="@string/action_device_info" />
+    <item
+        android:id="@+id/debug"
+        android:title="@string/action_debug" />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
