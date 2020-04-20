@@ -61,19 +61,12 @@ public class TagsListFragment extends Fragment {
         Log.d(TAG, "binding.fab");
         binding.fabCopy.setOnClickListener(fabv -> {
                             copyTagRfidToClipboard();
-                            Snackbar.make(fabv,
-                                       "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
-                                      .setAction("Action", null).show();
+                            Snackbar.make(
+                                    fabv,getString(R.string.clipboard_copy),
+                                    Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
                             }
-        );
-
-        /*
-        fabv -> Snackbar.make(fabv,
-                "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-
-         */
-
+            );
 
         Log.d(TAG, "Start BLE scan & connect");
         //TODO: Make observable and subscribe to result for device &/or connection
@@ -137,6 +130,6 @@ public class TagsListFragment extends Fragment {
         binding = null;
     }
 
-   //TODO Recreate list when Fragement is recreated but still in memory.
+   //TODO Recreate list when Fragment is recreated but still in memory.
 
 }
