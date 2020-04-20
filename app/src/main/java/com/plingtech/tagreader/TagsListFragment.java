@@ -60,7 +60,7 @@ public class TagsListFragment extends Fragment {
         });
         Log.d(TAG, "binding.fab");
         binding.fabCopy.setOnClickListener(fabv -> {
-                            copyTagRfidToClipboard();
+                            copyTagRfidsToClipboard();
                             Snackbar.make(
                                     fabv,getString(R.string.clipboard_copy),
                                     Snackbar.LENGTH_LONG)
@@ -78,7 +78,7 @@ public class TagsListFragment extends Fragment {
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
         List<ScannedTag> input = new ArrayList<>();
-        ScannedTag notags = new ScannedTag(getString(R.string.no_tags_msg), "", "00:00",0);
+        ScannedTag notags = new ScannedTag(0, getString(R.string.no_tags_msg), "", "00:00",0);
         Log.d(TAG,"notag: "+notags.toString());
         input.add(notags);
         Log.d(TAG, "setting adaptor");
@@ -87,15 +87,11 @@ public class TagsListFragment extends Fragment {
     }
 
     public void tagItemDataBuild (String rfid) {
-        String nlis = "";
-
-        ScannedTag t = new ScannedTag(rfid,
-                                    nlis,
-                                    addScannedTime(),
-                                    decodeStockType(nlis)
-        );
-        adapter.addScanResult(t);
-
+        String nlis = "No NLIS info";
+        String ts = addScannedTime();
+        if (!adapter.alreadyScanned(rfid, ts)) {
+            adapter.addTag(new ScannedTag(1, rfid, nlis, ts, decodeStockType(nlis)));
+        }
     }
 
     private String addScannedTime() {  // Add scan time to tag object
@@ -115,7 +111,7 @@ public class TagsListFragment extends Fragment {
         return 0;
     }
 
-    private void copyTagRfidToClipboard() {
+    private void copyTagRfidsToClipboard() {
         List<String> rfids = adapter.getAllTagRfids();
         ClipData cd;
         String rfidCopy = TextUtils.join("\n", rfids);

@@ -201,7 +201,6 @@ public class BlueToothStuff {
     private void onNotificationReceived(byte[] bytes) {
         //String tag = Arrays.toString(bytes);  // This don't work!
         String tag = new String(bytes);  // Must use this to convert array of ascii nums correctly
-
         Log.i(TAG, "Data from TagReader - Size: "+bytes.length+" Tag: "+tag+" bytes: "+bytes);
         ctxFrag.tagItemDataBuild(tag);
     }

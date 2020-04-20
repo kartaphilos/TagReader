@@ -12,10 +12,26 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.plingtech.tagreader.databinding.RecyclerViewItemBinding;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHolder> {
+
+    public boolean alreadyScanned(String rfid, String ts) {
+        Iterator<ScannedTag> it = data.iterator();
+        while (it.hasNext()) {
+            ScannedTag t = it.next();
+            if (t.getTagRfid() == rfid) {
+                t.incrementCount();
+                t.setTimestamp(ts);
+                it.remove();
+                addTag(t);
+                return true;
+            }
+        }
+        return false;
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -43,7 +59,7 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
         data.addAll(tags);
     }
 
-    void addScanResult(ScannedTag tag) {
+    void addTag(ScannedTag tag) {
         Log.d(TAG, "Adding tag to recycler view: "+tag.toString());
         if (emptyList) {
             Log.d(TAG,"Empty List - clearing fake tag");

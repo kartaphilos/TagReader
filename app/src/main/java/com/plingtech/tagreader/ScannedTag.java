@@ -2,6 +2,7 @@ package com.plingtech.tagreader;
 
 public class ScannedTag {
 
+    private int count = 0;
     private final String rfid;
     private String nlis;
     private String timestamp;
@@ -11,11 +12,20 @@ public class ScannedTag {
     static final int SHEEP = 2;
     static final int GOATS = 3;
 
-    public ScannedTag(String rfid, String nlis, String timestamp, int type) {
+    public ScannedTag(int count, String rfid, String nlis, String timestamp, int type) {
+        this.count = count;
         this.rfid = rfid;
         this.nlis = nlis;
         this.timestamp = timestamp;
         this.type = type;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    public void incrementCount() {
+        count++;
     }
 
     public String getTagRfid() {
@@ -38,7 +48,7 @@ public class ScannedTag {
         timestamp = t;
     }
 
-    public int getStockTye() {
+    public int getStockType() {
         return type;
     }
 
@@ -49,7 +59,8 @@ public class ScannedTag {
     @Override
     public String toString() {
         return "ScannedTag{"
-                + "tagRfid=" + rfid
+                + "Scan Count="+count
+                + ", tagRfid=" + rfid
                 + ", NLIS=" + nlis
                 + ", timestamp=" + timestamp
                 + ", stockType=" + type
