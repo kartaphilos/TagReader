@@ -32,8 +32,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+
 
 /*
 Class for connecting the BT tag reader.
@@ -57,13 +60,15 @@ public class BlueToothStuff {
     }
 
     private static final String TAG = "BT Stuff";
-    private static Context context;
+    private TagsListFragment ctxFrag;
+    private FragmentActivity mActivity;
 
     //Rx BLE vars
     private Disposable permsDisposable;
     private Disposable scanDisposable;
     private Disposable connectionDisposable;
     private Disposable connStateDisposable;
+    private Disposable notificationDisposable;
     private RxBleClient rxBleClient;  //This is for>
     private RxBleDevice bleDevice;
     private UUID serviceUuid;
@@ -115,8 +120,9 @@ public class BlueToothStuff {
     }
 
     // Scan Devices
-    public void scanBleDevices() {
+    public void scanBleDevices(TagsListFragment ctx) {
         Log.d(TAG, "scanBleDevices() start");
+        ctxFrag = ctx;
         scanDisposable = rxBleClient.scanBleDevices(
                 new ScanSettings.Builder()
                         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -130,7 +136,6 @@ public class BlueToothStuff {
                 )
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(this::disposeScan)
-                //.subscribe(resultsAdapter::addScanResult, this::onScanFailure);
                 .subscribe(this::processScanResult, this::onScanFailure);
         Log.d(TAG, "scanBleDevices() exit");
     }
@@ -156,41 +161,49 @@ public class BlueToothStuff {
         // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
         connStateDisposable = bleDevice.observeConnectionStateChanges()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onConnectionStateChange, this::onConnectionStateFailure);
+                .subscribe(this::onConnectionStateChange,
+                           this::onConnectionStateFailure);
     }
 
     // Connect & Subscribe
     private void connectTagReader() {
         Log.d(TAG, "BLE connectTagReader start");
         connectionDisposable = bleDevice.establishConnection(true)
-                .flatMapSingle(RxBleConnection::discoverServices)
-                .take(1) // Disconnect automatically after discovery
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(this::disposeConnection)
-                .subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
-        Log.d(TAG, "BLE connectTagReader finish");
-    }
-
-    private void subscribeToTagsRead(RxBleDeviceServices services) {
-        Log.d(TAG, "Entering subscribeToTagsRead()");
-        Log.d(TAG, "Starting Subscribe on characteristic");
-        if (isConnected()) {
-            Log.i(TAG, "Connection exists. discard and reconnect?");
-            disposeConnection();
-        }
-        connectionDisposable = bleDevice.establishConnection(true)
+                //.flatMapSingle(RxBleConnection::discoverServices)
+                //.take(1) // Disconnect automatically after discovery
                 .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
-                //.doOnNext(notificationObservable -> runOnUiThread(this::notificationHasBeenSetUp))
                 .flatMap(notificationObservable -> notificationObservable)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure
-                );
-        Log.d(TAG, "Finished Subscribe on characteristic");
+                .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
+                //.doFinally(this::disposeConnection)
+                //.subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
+        Log.d(TAG, "BLE connectTagReader finish");
     }
+    /*
+    private void subscribeToTagsRead(RxBleDeviceServices services) throws InterruptedException {
+        Log.d(TAG, "Entering subscribeToTagsRead()");
+        while (bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.DISCONNECTED) {
+            Log.d(TAG, "Connection exists. discard and reconnect?");
+            Thread.sleep(100);
+        }
+        Log.d(TAG, "No Connection - start notification subscribe");
+        notificationDisposable = bleDevice.establishConnection(true)
+                .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
+                .doOnNext(this::notificationHasBeenSetUp)
+                .flatMap(notificationObservable -> notificationObservable)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure)
+        ;
+        Log.d(TAG, "Finished Subscribe on characteristic");
+     }
+     */
 
     private void onNotificationReceived(byte[] bytes) {
-        Log.i(TAG, "Data from TagReader: "+ new String(bytes));
-        //Snackbar.make(findViewById(R.id.content), "Change: " + HexString.bytesToHex(bytes), Snackbar.LENGTH_SHORT).show();
+        //String tag = Arrays.toString(bytes);  // This don't work!
+        String tag = new String(bytes);  // Must use this to convert array of ascii nums correctly
+
+        Log.i(TAG, "Data from TagReader - Size: "+bytes.length+" Tag: "+tag+" bytes: "+bytes);
+        ctxFrag.tagItemDataBuild(tag);
     }
 
     // Reconnect logic
@@ -226,7 +239,7 @@ public class BlueToothStuff {
         Log.i(TAG, "BLE Connection state changed to: "+newState.toString());
     }
 
-    private void notificationHasBeenSetUp() {
+    private void notificationHasBeenSetUp(Observable<byte[]> observable) {
         Log.i(TAG,"Notifications have been set up!!");
         //Snackbar.make(, "Notifications has been set up", Snackbar.LENGTH_SHORT).show();
     }
@@ -245,6 +258,7 @@ public class BlueToothStuff {
         disposeScan();
         disposeConnection();
         disposeConnectionWatcher();
+        disposeNotification();
     }
 
     private void disposePerms() {
@@ -277,6 +291,12 @@ public class BlueToothStuff {
         }
     }
 
+    private void disposeNotification() {
+        if (notificationDisposable !=null) {
+            Log.d(TAG,"disposing Notification");
+            notificationDisposable.dispose();
+        }
+    }
 
     //Unused?
     /*

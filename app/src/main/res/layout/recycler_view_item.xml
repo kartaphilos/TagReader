@@ -5,49 +5,35 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-  <ImageView
-      android:id="@+id/stockType"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginStart="8dp"
-      android:layout_marginTop="8dp"
-      android:contentDescription="@string/stock_type"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      tools:src="@tools:sample/avatars" />
-
   <TextView
-      android:id="@+id/tag_Rfid"
+      android:id="@+id/tag_rfid"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginStart="8dp"
+      android:layout_marginStart="66dp"
       android:layout_marginBottom="8dp"
       android:textColor="@android:color/black"
-      android:textSize="20sp"
-      app:layout_constraintBottom_toTopOf="@+id/tag_NLIS"
-      app:layout_constraintStart_toEndOf="@+id/stockType"
-      app:layout_constraintTop_toTopOf="@+id/stockType"
+      android:textSize="18sp"
+      app:layout_constraintBottom_toTopOf="@+id/tag_nlis"
+      app:layout_constraintStart_toStartOf="parent"
       tools:text="@tools:sample/full_names" />
 
   <TextView
-      android:id="@+id/tag_NLIS"
+      android:id="@+id/tag_nlis"
       android:layout_width="285dp"
       android:layout_height="20dp"
-      android:layout_marginStart="8dp"
-      android:layout_marginEnd="8dp"
-      app:layout_constraintBottom_toBottomOf="@+id/stockType"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.050"
-      app:layout_constraintStart_toEndOf="@+id/stockType"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tag_rfid"
       tools:text="@tools:sample/lorem[4:10]" />
 
   <TextView
-      android:id="@+id/scanTime"
+      android:id="@+id/scan_time"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
       android:layout_marginEnd="8dp"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/stockType"
+      app:layout_constraintTop_toTopOf="parent"
       tools:text="@tools:sample/date/hhmm" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

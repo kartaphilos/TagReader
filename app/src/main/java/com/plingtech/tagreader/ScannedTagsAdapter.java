@@ -1,19 +1,17 @@
 package com.plingtech.tagreader;
 
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.scan.ScanResult;
+import com.plingtech.tagreader.databinding.RecyclerViewItemBinding;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,60 +19,58 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
-        //@BindView(android.R.id.text1)
-        TextView line1;
-        //@BindView(android.R.id.text2)
-        TextView line2;
+        //ImageView stockType;
+        TextView tagRfid;
+        TextView tagNlis;
+        TextView scanTime;
 
-        ViewHolder(View itemView) {
-            super(itemView);
-            //ButterKnife.bind(this, itemView);
+        ViewHolder(RecyclerViewItemBinding tagBinding) {
+            super(tagBinding.getRoot());
+            tagRfid = tagBinding.tagRfid;
+            tagNlis = tagBinding.tagNlis;
+            //stockType = tagBinding.stockType;
+            scanTime = tagBinding.scanTime;
         }
     }
 
-    interface OnAdapterItemClickListener {
+    //if (stockType == ScannedTag.CATTLE)  holder.line1.setText(String.format("MOO", item.description));
+    private static final String TAG = "Adapter";
+    private final List<ScannedTag> data = new ArrayList<>();
+    private boolean emptyList = true;
 
-        void onAdapterViewClick(View view);
+    public ScannedTagsAdapter(List<ScannedTag> tags) {
+        //for (ScannedTag t : tags) data.add(t);
+        data.addAll(tags);
     }
 
-    private static final Comparator<ScanResult> SORTING_COMPARATOR = (lhs, rhs) ->
-            lhs.getBleDevice().getMacAddress().compareTo(rhs.getBleDevice().getMacAddress());
-    private final List<ScanResult> data = new ArrayList<>();
-    private OnAdapterItemClickListener onAdapterItemClickListener;
-    private final View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            if (onAdapterItemClickListener != null) {
-                onAdapterItemClickListener.onAdapterViewClick(v);
-            }
+    void addScanResult(ScannedTag tag) {
+        Log.d(TAG, "Adding tag to recycler view: "+tag.toString());
+        if (emptyList) {
+            Log.d(TAG,"Empty List - clearing fake tag");
+            emptyList = false;
+            data.clear();
         }
-    };
-
-    void addScanResult(ScanResult bleScanResult) {
-        // Not the best way to ensure distinct devices, just for sake on the demo.
-
-        for (int i = 0; i < data.size(); i++) {
-
-            if (data.get(i).getBleDevice().equals(bleScanResult.getBleDevice())) {
-                data.set(i, bleScanResult);
-                notifyItemChanged(i);
-                return;
-            }
-        }
-
-        data.add(bleScanResult);
-        Collections.sort(data, SORTING_COMPARATOR);
+        data.add(tag);
         notifyDataSetChanged();
+    }
+
+    public List<ScannedTag> getAllTags() {
+        return data;
+    }
+
+    public List<String> getAllTagRfids() {
+        List<String> rfids = new ArrayList<>();
+        for (ScannedTag t : data) {
+            Log.d(TAG, "RFID get: "+t.getTagRfid());
+            rfids.add(t.getTagRfid());
+        }
+        Log.d(TAG,"All Tags: "+rfids);
+        return rfids;
     }
 
     void clearScanResults() {
         data.clear();
         notifyDataSetChanged();
-    }
-
-    ScanResult getItemAtPosition(int childAdapterPosition) {
-        return data.get(childAdapterPosition);
     }
 
     @Override
@@ -84,21 +80,16 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        final ScanResult rxBleScanResult = data.get(position);
-        final RxBleDevice bleDevice = rxBleScanResult.getBleDevice();
-        holder.line1.setText(String.format(Locale.getDefault(), "%s (%s)", bleDevice.getMacAddress(), bleDevice.getName()));
-        holder.line2.setText(String.format(Locale.getDefault(), "RSSI: %d", rxBleScanResult.getRssi()));
+        final ScannedTag tag = data.get(position);
+        holder.tagRfid.setText(tag.getTagRfid());
+        holder.scanTime.setText(tag.getTimestamp());
     }
 
-    @Override
     @NonNull
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        final View itemView = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.two_line_list_item, parent, false);
-        itemView.setOnClickListener(onClickListener);
-        return new ViewHolder(itemView);
+    @Override
+    public ScannedTagsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        RecyclerViewItemBinding tagBinding = RecyclerViewItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new ViewHolder(tagBinding);
     }
 
-    void setOnAdapterItemClickListener(OnAdapterItemClickListener onAdapterItemClickListener) {
-        this.onAdapterItemClickListener = onAdapterItemClickListener;
-    }
 }

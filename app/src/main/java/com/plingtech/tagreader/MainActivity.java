@@ -1,5 +1,6 @@
 package com.plingtech.tagreader;
 
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -16,10 +17,16 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class MainActivity extends AppCompatActivity {
-    private ActivityMainBinding binding;
-    BlueToothStuff bt;
     private static final String TAG = "TagMainActivity";
+    private ActivityMainBinding binding;
+    public BlueToothStuff bt;
+    public ClipboardManager cm;
+    //public ScannedTagsAdapter adapter;
     private static Context context;
     RxBleClient rxBleClient;
 
@@ -36,14 +43,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "Inflating Main Activity with binding");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        Log.d(TAG, "binding.getRoot");
         View view = binding.getRoot();
+        Log.d(TAG, "setView");
         setContentView(view);
+        Log.d(TAG, "binding.toolbar");
         setSupportActionBar(binding.toolbar);
-        binding.fab.setOnClickListener(fabv -> Snackbar.make(fabv,
-                "Scanned Tags copied to clipboard", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
 
+        // Start of Logic
         Log.d(TAG, "getActivity context?");
         MainActivity.context = this;
         Log.d(TAG, "Create btStuff singleton");
@@ -52,9 +61,10 @@ public class MainActivity extends AppCompatActivity {
         bt.btLogging();
         Log.d(TAG, "Get permissions"); //TODO: Its an observable so perms won't complete for a long time. Will fail on new app
         bt.btPermissions();
-        Log.d(TAG, "Start BLE scan & connect");
-        //TODO: Make observable and subscribe to result for device &/or connection
-        bt.scanBleDevices();
+
+        cm = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);;
+
+
     }
 
     @Override
