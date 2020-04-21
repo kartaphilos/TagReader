@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -37,6 +38,8 @@ public class TagsListFragment extends Fragment {
     public ScannedTagsAdapter adapter;
     public TagsListFragment tagsFrag;
     public MainActivity ma;
+    MediaPlayer mp;
+
 
     @Override
     public View onCreateView (LayoutInflater inflater,
@@ -71,7 +74,7 @@ public class TagsListFragment extends Fragment {
         Log.d(TAG, "Start BLE scan & connect");
         //TODO: Make observable and subscribe to result for device &/or connection
         ma.bt.scanBleDevices(tagsFrag);
-
+        mp = MediaPlayer.create(ma, R.raw.slow_sabre);
         Log.d(TAG, "recyclerView binding");
         recyclerView = binding.tagList;
         recyclerView.setHasFixedSize(true);
@@ -86,12 +89,13 @@ public class TagsListFragment extends Fragment {
         recyclerView.setAdapter(adapter);
     }
 
-    public void tagItemDataBuild (String rfid) {
+    void tagItemDataBuild(String rfid) {
         String nlis = "No NLIS info";
         String ts = addScannedTime();
         if (!adapter.alreadyScanned(rfid, ts)) {
             adapter.addTag(new ScannedTag(1, rfid, nlis, ts, decodeStockType(nlis)));
         }
+        mp.start();
     }
 
     private String addScannedTime() {  // Add scan time to tag object
@@ -123,6 +127,8 @@ public class TagsListFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         //ma.tags = adapter.data;
+        mp.stop(); // Stop media player
+
         binding = null;
     }
 

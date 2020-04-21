@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     public BlueToothStuff bt;
     public ClipboardManager cm;
+
     //public ScannedTagsAdapter adapter;
     private static Context context;
     RxBleClient rxBleClient;

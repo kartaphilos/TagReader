@@ -8,14 +8,17 @@
   <TextView
       android:id="@+id/scanCount"
       android:layout_width="0dp"
-      android:layout_height="wrap_content"
+      android:layout_height="0dp"
       android:ems="10"
+      android:gravity="center"
       android:importantForAutofill="no"
       android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+      android:textColor="@android:color/darker_gray"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@+id/tag_rfid"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
+      app:layout_constraintTop_toTopOf="parent"
+      tools:text="1" />
 
   <TextView
       android:id="@+id/tag_rfid"
@@ -27,7 +30,7 @@
       app:layout_constraintBottom_toTopOf="@+id/tag_nlis"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      tools:text="@tools:sample/full_names" />
+      tools:text="XXX_XXXXXXXXXXX" />
 
   <TextView
       android:id="@+id/tag_nlis"
@@ -42,7 +45,9 @@
       android:id="@+id/scan_time"
       android:layout_width="0dp"
       android:layout_height="0dp"
-      android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+      android:gravity="center"
+      android:textAppearance="@style/TextAppearance.AppCompat.Small"
+      android:textColor="@android:color/darker_gray"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@+id/tag_rfid"

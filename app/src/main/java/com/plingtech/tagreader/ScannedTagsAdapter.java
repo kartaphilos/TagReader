@@ -3,7 +3,6 @@ package com.plingtech.tagreader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,34 +13,21 @@ import com.plingtech.tagreader.databinding.RecyclerViewItemBinding;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
+
 
 class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHolder> {
-
-    public boolean alreadyScanned(String rfid, String ts) {
-        Iterator<ScannedTag> it = data.iterator();
-        while (it.hasNext()) {
-            ScannedTag t = it.next();
-            if (t.getTagRfid() == rfid) {
-                t.incrementCount();
-                t.setTimestamp(ts);
-                it.remove();
-                addTag(t);
-                return true;
-            }
-        }
-        return false;
-    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         //ImageView stockType;
+        TextView count;
         TextView tagRfid;
         TextView tagNlis;
         TextView scanTime;
 
         ViewHolder(RecyclerViewItemBinding tagBinding) {
             super(tagBinding.getRoot());
+            count = tagBinding.scanCount;
             tagRfid = tagBinding.tagRfid;
             tagNlis = tagBinding.tagNlis;
             //stockType = tagBinding.stockType;
@@ -54,7 +40,7 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
     private final List<ScannedTag> data = new ArrayList<>();
     private boolean emptyList = true;
 
-    public ScannedTagsAdapter(List<ScannedTag> tags) {
+    ScannedTagsAdapter(List<ScannedTag> tags) {
         //for (ScannedTag t : tags) data.add(t);
         data.addAll(tags);
     }
@@ -70,21 +56,35 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
         notifyDataSetChanged();
     }
 
+    boolean alreadyScanned(String rfid, String ts) {
+        Iterator<ScannedTag> it = data.iterator();
+        while (it.hasNext()) {
+            ScannedTag t = it.next();
+            if (t.getTagRfid().equals(rfid)) {
+                t.incrementCount();
+                t.setTimestamp(ts);
+                it.remove();
+                addTag(t);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<ScannedTag> getAllTags() {
         return data;
     }
 
-    public List<String> getAllTagRfids() {
+    List<String> getAllTagRfids() {
         List<String> rfids = new ArrayList<>();
         for (ScannedTag t : data) {
             Log.d(TAG, "RFID get: "+t.getTagRfid());
             rfids.add(t.getTagRfid());
         }
         Log.d(TAG,"All Tags: "+rfids);
-        return rfids;
-    }
+        return rfids;    }
 
-    void clearScanResults() {
+    void clearTags() {
         data.clear();
         notifyDataSetChanged();
     }
@@ -99,6 +99,7 @@ class ScannedTagsAdapter extends RecyclerView.Adapter<ScannedTagsAdapter.ViewHol
         final ScannedTag tag = data.get(position);
         holder.tagRfid.setText(tag.getTagRfid());
         holder.scanTime.setText(tag.getTimestamp());
+        holder.count.setText(String.valueOf(tag.getCount()));
     }
 
     @NonNull
