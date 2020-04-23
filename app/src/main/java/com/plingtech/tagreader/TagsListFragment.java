@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -33,12 +34,13 @@ public class TagsListFragment extends Fragment {
 
     private static final String TAG = "TagListFrag";
     private FragmentTagsListBinding binding;
-    private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     public ScannedTagsAdapter adapter;
     public TagsListFragment tagsFrag;
     public MainActivity ma;
-    MediaPlayer mp;
+    private MediaPlayer mp;
+    private TextView totalCountView;
+    private int totalDistinct = 0;
 
 
     @Override
@@ -57,10 +59,12 @@ public class TagsListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated started");
+        /*
         binding.buttonSecond.setOnClickListener(click -> {
             NavHostFragment.findNavController(TagsListFragment.this)
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
         });
+        */
         Log.d(TAG, "binding.fab");
         binding.fabCopy.setOnClickListener(fabv -> {
                             copyTagRfidsToClipboard();
@@ -71,22 +75,26 @@ public class TagsListFragment extends Fragment {
                             }
             );
 
-        Log.d(TAG, "Start BLE scan & connect");
-        //TODO: Make observable and subscribe to result for device &/or connection
-        ma.bt.scanBleDevices(tagsFrag);
+        Log.d(TAG, "MediaPlayer create");
         mp = MediaPlayer.create(ma, R.raw.slow_sabre);
         Log.d(TAG, "recyclerView binding");
-        recyclerView = binding.tagList;
+        RecyclerView recyclerView = binding.tagList;
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
         List<ScannedTag> input = new ArrayList<>();
-        ScannedTag notags = new ScannedTag(0, getString(R.string.no_tags_msg), "", "00:00",0);
+        ScannedTag notags = new ScannedTag(0, "", "", "00:00",0);
         Log.d(TAG,"notag: "+notags.toString());
         input.add(notags);
         Log.d(TAG, "setting adaptor");
         adapter = new ScannedTagsAdapter(input);
         recyclerView.setAdapter(adapter);
+        totalCountView = binding.totalCount;
+        totalCountView.setText(getString(R.string.no_tags_msg));
+
+        Log.d(TAG, "Start BLE scan & connect");
+        ma.bt.scanBleDevices(tagsFrag);
+
     }
 
     void tagItemDataBuild(String rfid) {
@@ -94,6 +102,7 @@ public class TagsListFragment extends Fragment {
         String ts = addScannedTime();
         if (!adapter.alreadyScanned(rfid, ts)) {
             adapter.addTag(new ScannedTag(1, rfid, nlis, ts, decodeStockType(nlis)));
+            totalCountView.setText(String.valueOf(++totalDistinct));
         }
         mp.start();
     }

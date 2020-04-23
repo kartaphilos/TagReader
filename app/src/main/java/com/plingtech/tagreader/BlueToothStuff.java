@@ -1,8 +1,5 @@
 package com.plingtech.tagreader;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.plingtech.tagreader.MainActivity;
-
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -27,12 +24,10 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -71,7 +66,6 @@ public class BlueToothStuff {
     private Disposable notificationDisposable;
     private RxBleClient rxBleClient;  //This is for>
     private RxBleDevice bleDevice;
-    private UUID serviceUuid;
 
     // Tag Reader Device consts
     private static String tagDeviceName = "PlingTech Tag Reader";
@@ -84,10 +78,10 @@ public class BlueToothStuff {
     }
 
     // Construct Singleton?
-    public void BlueToothStuff () {}
+    //public void BlueToothStuff () {}
 
     // Setup logging
-    public void btLogging() {
+    void btLogging() {
         Log.i(TAG, "rxBLE logging setup");
         rxBleClient = RxBleClient.create(getContext());
         RxBleClient.updateLogOptions(new LogOptions.Builder()
@@ -101,7 +95,7 @@ public class BlueToothStuff {
     }
 
     // Get Permissions
-    public void btPermissions() {
+    void btPermissions() {
         Log.i(TAG, "starting permissions bit ");
         RxPermissions rxPermissions = new RxPermissions((FragmentActivity) getContext());
         rxPermissions.setLogging(true);
@@ -120,7 +114,7 @@ public class BlueToothStuff {
     }
 
     // Scan Devices
-    public void scanBleDevices(TagsListFragment ctx) {
+    void scanBleDevices(TagsListFragment ctx) {
         Log.d(TAG, "scanBleDevices() start");
         ctxFrag = ctx;
         scanDisposable = rxBleClient.scanBleDevices(
@@ -201,7 +195,7 @@ public class BlueToothStuff {
     private void onNotificationReceived(byte[] bytes) {
         //String tag = Arrays.toString(bytes);  // This don't work!
         String tag = new String(bytes);  // Must use this to convert array of ascii nums correctly
-        Log.i(TAG, "Data from TagReader - Size: "+bytes.length+" Tag: "+tag+" bytes: "+bytes);
+        Log.i(TAG, "Data from TagReader - Size: "+bytes.length+" Tag: "+tag);
         ctxFrag.tagItemDataBuild(tag);
     }
 
@@ -231,7 +225,7 @@ public class BlueToothStuff {
     }
 
     // Helpers
-    public void stopBleScan() {
+    void stopBleScan() {
        disposeScan();
     }
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
@@ -252,7 +246,7 @@ public class BlueToothStuff {
     }
 
     // Cleanup
-    public void cleanup() {
+    void cleanup() {
         disposePerms();
         disposeScan();
         disposeConnection();
@@ -317,7 +311,7 @@ public class BlueToothStuff {
         if (isConnected()) {
             Log.d(TAG, "Connected?: " + isConnected() + " Entering service loop");
             for (BluetoothGattService service : services.getBluetoothGattServices()) {
-                serviceUuid = service.getUuid();
+                UUID serviceUuid = service.getUuid();
                 Log.i(TAG, "Service Type: " + getServiceType(service) + "Service UUID: " + serviceUuid);
                 Log.i(TAG, "Target Service = " + tagsServiceUuid);
                 Log.d(TAG, "Service Match?: " + (tagsServiceUuid == serviceUuid));
