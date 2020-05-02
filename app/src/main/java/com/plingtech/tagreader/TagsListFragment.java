@@ -137,7 +137,6 @@ public class TagsListFragment extends Fragment {
         super.onDestroyView();
         //ma.tags = adapter.data;
         mp.stop(); // Stop media player
-
         binding = null;
     }
 

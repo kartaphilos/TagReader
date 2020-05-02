@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 
@@ -47,16 +48,19 @@ Main methods
  */
 
 public class BlueToothStuff {
-    private static BlueToothStuff INSTANCE = new BlueToothStuff();
-
-    BlueToothStuff() {}
-    public static BlueToothStuff getInstance() {
-        return(INSTANCE);
-    }
-
     private static final String TAG = "BT Stuff";
     private TagsListFragment ctxFrag;
     private FragmentActivity mActivity;
+    public MainActivity ma;
+
+    BlueToothStuff(MainActivity activity) {
+        ma = activity;
+    }
+
+    // What was this stuff for???
+    //private static BlueToothStuff INSTANCE = new BlueToothStuff();
+    //public static BlueToothStuff getInstance() { return(INSTANCE); }
+
 
     //Rx BLE vars
     private Disposable permsDisposable;
@@ -65,7 +69,14 @@ public class BlueToothStuff {
     private Disposable connStateDisposable;
     private Disposable notificationDisposable;
     private RxBleClient rxBleClient;  //This is for>
-    private RxBleDevice bleDevice;
+    private RxBleDevice bleDevice = null;
+    private RxBleConnection.RxBleConnectionState currentConnState = RxBleConnection.RxBleConnectionState.DISCONNECTED;
+
+    //BT STATUS CONSTS
+    public static final int BT_OFF = -1;
+    public static final int BT_DISCONNECTED = 0;
+    public static final int BT_CONNECTED = 1;
+    public static final int BT_CONNECTING = 2;
 
     // Tag Reader Device consts
     private static String tagDeviceName = "PlingTech Tag Reader";
@@ -76,6 +87,7 @@ public class BlueToothStuff {
     private static Context getContext() {
         return (FragmentActivity) MainActivity.getAppContext();
     }
+
 
     // Construct Singleton?
     //public void BlueToothStuff () {}
@@ -140,18 +152,22 @@ public class BlueToothStuff {
 
     private void processScanResult(ScanResult result) {
         // Process scan result here.
-        Log.i(TAG,"BLE Scan - something found");
-        Log.i(TAG, "Scanned Device: "+result.getBleDevice());
+        //Log.d(TAG,"BLE Scan - Found a BT thingy: "+result.getBleDevice());
         if (Objects.equals(result.getBleDevice().getName(), tagDeviceName)) {
             Log.i(TAG, "Scan: Tag Reader found");
-            bleDevice = result.getBleDevice();
-            connectionStateWatcher(); //Setup watcher for BLE connection state changes
-            connectTagReader(); // Connect to reader
+            if (bleDevice == null) {
+                bleDevice = result.getBleDevice();
+                Log.i(TAG, "Scan: Tag Reader Detail: "+result.toString());
+                connectionStateWatcher(); //Setup watcher for BLE connection state changes
+                connectTagReader(); // Connect to reader
+            } else {
+                Log.i(TAG, "Settle Down! - already discovered Tag Reader");
+            }
         }
     }
 
     private void connectionStateWatcher () {
-        Log.i(TAG, "BLE connection state change setup");
+        Log.i(TAG, "BLE connection state change setup started");
         // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
         connStateDisposable = bleDevice.observeConnectionStateChanges()
                 .observeOn(AndroidSchedulers.mainThread())
@@ -173,24 +189,6 @@ public class BlueToothStuff {
                 //.subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
         Log.d(TAG, "BLE connectTagReader finish");
     }
-    /*
-    private void subscribeToTagsRead(RxBleDeviceServices services) throws InterruptedException {
-        Log.d(TAG, "Entering subscribeToTagsRead()");
-        while (bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.DISCONNECTED) {
-            Log.d(TAG, "Connection exists. discard and reconnect?");
-            Thread.sleep(100);
-        }
-        Log.d(TAG, "No Connection - start notification subscribe");
-        notificationDisposable = bleDevice.establishConnection(true)
-                .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
-                .doOnNext(this::notificationHasBeenSetUp)
-                .flatMap(notificationObservable -> notificationObservable)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure)
-        ;
-        Log.d(TAG, "Finished Subscribe on characteristic");
-     }
-     */
 
     private void onNotificationReceived(byte[] bytes) {
         //String tag = Arrays.toString(bytes);  // This don't work!
@@ -209,32 +207,47 @@ public class BlueToothStuff {
             BleScanExceptionHandler.handleException((Activity) getContext(), (BleScanException) throwable);
         }
     }
+
     private void onConnectionFailure(Throwable throwable) {
-        //noinspection ConstantConditions
         Log.i(TAG, "BT Connection error: "+throwable);
-        //Snackbar.make(findViewById(android.R.id.content), "Connection error: " + throwable, Snackbar.LENGTH_SHORT).show();
     }
 
     private void onConnectionStateFailure(Throwable throwable) {
-        Log.d(TAG, "Error setting upp connection watcher: "+throwable);
+        Log.d(TAG, "Error setting up connection watcher: "+throwable);
+        ma.displayBtStatus(currentConnState);
     }
 
     private void onNotificationSetupFailure(Throwable throwable) {
-        Log.i(TAG, "Notifications error: " + throwable);
-        //Snackbar.make(findViewById(R.id.content), "Notifications error: " + throwable, Snackbar.LENGTH_SHORT).show();
+        //if (throwable instanceof Excep) {
+        //    Log.d(TAG,"Scan Failure!: "+throwable);
+        //    BleScanExceptionHandler.handleException((Activity) getContext(), (BleScanException) throwable);
+        //}
+        Log.d(TAG, "Notifications error: " + throwable);
+        ma.displayBtStatus(currentConnState);
     }
 
     // Helpers
     void stopBleScan() {
        disposeScan();
     }
+
+    RxBleConnection.RxBleConnectionState getCurrentConnState() {
+        return currentConnState;
+    }
+
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {
-        Log.i(TAG, "BLE Connection state changed to: "+newState.toString());
+        Log.i(TAG, "BLE Connection state changed to: "+newState.toString()+
+                        " (Was: "+currentConnState.toString()+")");
+        if (newState != currentConnState) {
+            Log.d(TAG, "Changing BT Icon to: "+newState.toString());
+            currentConnState = newState;
+            ma.displayBtStatus(currentConnState);
+        }
     }
 
     private void notificationHasBeenSetUp(Observable<byte[]> observable) {
         Log.i(TAG,"Notifications have been set up!!");
-        //Snackbar.make(, "Notifications has been set up", Snackbar.LENGTH_SHORT).show();
+        Toast.makeText(ma,"Subscribed to Tag Reader updates",Toast.LENGTH_SHORT).show();
     }
 
     private boolean isScanning() {
@@ -247,6 +260,7 @@ public class BlueToothStuff {
 
     // Cleanup
     void cleanup() {
+        Log.i(TAG, "Cleanning up disposables");
         disposePerms();
         disposeScan();
         disposeConnection();
@@ -258,6 +272,8 @@ public class BlueToothStuff {
         if (permsDisposable !=null) {
             Log.d(TAG,"disposing perms");
             permsDisposable.dispose();
+        } else {
+            Log.d(TAG, "Perms already disposed");
         }
     }
 
@@ -265,6 +281,8 @@ public class BlueToothStuff {
         if (isScanning()) {
             Log.d(TAG,"disposing scan");
             scanDisposable.dispose();
+        } else {
+            Log.d(TAG, "Scan already disposed");
         }
     }
 
@@ -281,6 +299,8 @@ public class BlueToothStuff {
         if (connStateDisposable !=null) {
             Log.d(TAG,"disposing Watcher");
             connStateDisposable.dispose();
+        } else {
+            Log.d(TAG, "Watcher already disposed");
         }
     }
 
@@ -288,6 +308,8 @@ public class BlueToothStuff {
         if (notificationDisposable !=null) {
             Log.d(TAG,"disposing Notification");
             notificationDisposable.dispose();
+        } else {
+            Log.d(TAG, "Notifications already disposed");
         }
     }
 
@@ -306,7 +328,7 @@ public class BlueToothStuff {
                 .subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
         servicesDisposable.add(disposable);
     }
-    */
+
     private void discoverServicesAndCharacteristics(RxBleDeviceServices services) {
         if (isConnected()) {
             Log.d(TAG, "Connected?: " + isConnected() + " Entering service loop");
@@ -331,7 +353,28 @@ public class BlueToothStuff {
             Log.d(TAG, "Finished service & characteristics loop");
         }
     }
+    */
 
+    /*
+    private void subscribeToTagsRead(RxBleDeviceServices services) throws InterruptedException {
+      Log.d(TAG, "Entering subscribeToTagsRead()");
+      while (bleDevice.getConnectionState() != RxBleConnection.RxBleConnectionState.DISCONNECTED) {
+          Log.d(TAG, "Connection exists. discard and reconnect?");
+          Thread.sleep(100);
+      }
+      Log.d(TAG, "No Connection - start notification subscribe");
+      notificationDisposable = bleDevice.establishConnection(true)
+              .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
+              .doOnNext(this::notificationHasBeenSetUp)
+              .flatMap(notificationObservable -> notificationObservable)
+              .observeOn(AndroidSchedulers.mainThread())
+              .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure)
+      ;
+      Log.d(TAG, "Finished Subscribe on characteristic");
+    }
+   */
+
+    /*
     private String describeProperties(BluetoothGattCharacteristic characteristic) {
         List<String> properties = new ArrayList<>();
         if (isCharacteristicReadable(characteristic)) properties.add("Read");
@@ -356,5 +399,6 @@ public class BlueToothStuff {
         return (characteristic.getProperties() & (BluetoothGattCharacteristic.PROPERTY_WRITE
                 | BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) != 0;
     }
+    */
 
 }

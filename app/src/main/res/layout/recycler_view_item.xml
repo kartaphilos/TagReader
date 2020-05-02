@@ -22,7 +22,7 @@
 
   <TextView
       android:id="@+id/tag_rfid"
-      android:layout_width="wrap_content"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginBottom="8dp"
       android:textColor="@android:color/black"
@@ -36,10 +36,10 @@
       android:id="@+id/tag_nlis"
       android:layout_width="0dp"
       android:layout_height="20dp"
-      app:layout_constraintStart_toEndOf="@+id/scanCount"
       app:layout_constraintEnd_toStartOf="@+id/scan_time"
+      app:layout_constraintStart_toEndOf="@+id/scanCount"
       app:layout_constraintTop_toBottomOf="@+id/tag_rfid"
-      tools:text="@tools:sample/lorem[4:10]" />
+      tools:text="3ABCD123XBX00004" />
 
   <TextView
       android:id="@+id/scan_time"
