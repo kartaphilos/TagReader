@@ -14,6 +14,7 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.util.Log;
 import android.view.View;
@@ -83,16 +84,27 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        String TAG = "OptionsMenuClicked";
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.bt_status:
+                Log.d(TAG,"BT Status clicked");
+                //Open PopUp for connect/disconnect/RSSI/MAC/etc - time connected
+                DialogFragment newFragment = new BlueToothStatusFragment();
+                newFragment.show(getSupportFragmentManager(), "bt");
+                return true;
+            case R.id.copy_session:
+                Log.d(TAG,"Copy clicked");
+                //Copy clipboard items
+                return true;
+            case R.id.debug:
+                Log.d(TAG,"Debug clicked");
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+                // Display debug info - what to show?
+            default:
+                Log.d(TAG,"Nothing in this part of the menu");
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
