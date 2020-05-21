@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
 
+import com.jakewharton.rx.ReplayingShare;
 import com.polidea.rxandroidble2.LogConstants;
 import com.polidea.rxandroidble2.LogOptions;
 import com.polidea.rxandroidble2.RxBleClient;
@@ -31,7 +32,10 @@ import java.util.UUID;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 /*
@@ -68,7 +72,9 @@ public class BlueToothStuff {
     private Disposable connectionDisposable;
     private Disposable connStateDisposable;
     private Disposable notificationDisposable;
-    private RxBleClient rxBleClient;  //This is for>
+    private CompositeDisposable bigDisposable = new CompositeDisposable();
+    private Observable<RxBleConnection> connectionObservable;
+    private RxBleClient rxBleClient;
     private RxBleDevice bleDevice = null;
     private RxBleConnection.RxBleConnectionState currentConnState = RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
@@ -195,16 +201,29 @@ public class BlueToothStuff {
     // Connect & Subscribe
     private void connectTagReader() {
         Log.d(TAG, "BLE connectTagReader start");
-        connectionDisposable = bleDevice.establishConnection(true)
-                //.flatMapSingle(RxBleConnection::discoverServices)
-                //.take(1) // Disconnect automatically after discovery
+        connectionObservable =  bleDevice.establishConnection(true).compose(ReplayingShare.instance());
+
+        Disposable disp1 = connectionObservable
                 .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
                 .flatMap(notificationObservable -> notificationObservable)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
                 //.doFinally(this::disposeConnection)
                 //.subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
+        bigDisposable.add(disp1);
+
+        Disposable disp2 = connectionObservable
+                .flatMap(rxBleConnection -> // Set desired interval.
+                        Observable.interval(1, SECONDS).flatMapSingle(sequence -> rxBleConnection.readRssi()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateRssi, this::onConnectionFailure);
+        bigDisposable.add(disp2);
+
         Log.d(TAG, "BLE connectTagReader finish");
+    }
+
+    private void updateRssi(Integer rssi) {
+        Log.d(TAG, "RSSI: "+rssi);
     }
 
     private void onNotificationReceived(byte[] bytes) {
