@@ -88,6 +88,27 @@ public class BlueToothStuff {
         return (FragmentActivity) MainActivity.getAppContext();
     }
 
+    // Various getters of infos
+    //Device details
+    public RxBleDevice getBleDevice() {
+        return bleDevice;
+    }
+    public String getBleDeviceName() {
+        return bleDevice.getName();
+    }
+    public String getBleDeviceMac() {
+        return bleDevice.getMacAddress();
+    }
+    // Connection State
+    public RxBleConnection.RxBleConnectionState getCurrentConnState() {
+        return currentConnState;
+    }
+
+    // RSSI
+    public RxBleConnection getDeviceRssi() {
+        return null;
+    }
+
 
     // Construct Singleton?
     //public void BlueToothStuff () {}
@@ -144,10 +165,6 @@ public class BlueToothStuff {
                 .doFinally(this::disposeScan)
                 .subscribe(this::processScanResult, this::onScanFailure);
         Log.d(TAG, "scanBleDevices() exit");
-    }
-
-    public RxBleDevice getBleDevice() {
-        return bleDevice;
     }
 
     private void processScanResult(ScanResult result) {
@@ -229,10 +246,6 @@ public class BlueToothStuff {
     // Helpers
     void stopBleScan() {
        disposeScan();
-    }
-
-    RxBleConnection.RxBleConnectionState getCurrentConnState() {
-        return currentConnState;
     }
 
     private void onConnectionStateChange(RxBleConnection.RxBleConnectionState newState) {

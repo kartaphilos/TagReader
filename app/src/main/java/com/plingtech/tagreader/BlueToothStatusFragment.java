@@ -39,26 +39,16 @@ public class BlueToothStatusFragment extends DialogFragment {
                         // Close
                     }
                 })
-                /*
-                .setPositiveButton(R.string.connect, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id){
-                                    // Connect
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                    }
-                })
-                */
         ;
 
         // Set Text with BT device info & rssi
         if(ma.bt.getBleDevice() == null) {
-            binding.btStatusDialog.setText("No Device Detected");
+            binding.btDeviceName.setText("No Device Detected");
         }
         else {
-            binding.btStatusDialog.setText("Device: "+ma.bt.getBleDevice());
+            binding.btDeviceName.setText(ma.bt.getBleDeviceName());
+            binding.btDeviceMac.setText(ma.bt.getBleDeviceMac());
+            binding.btConnStatus.setText(ma.bt.getCurrentConnState().toString());
         }
         //binding.btStatusDialog.append(" RSSI: "+ma.bt.getBleDevice().toString());
 
