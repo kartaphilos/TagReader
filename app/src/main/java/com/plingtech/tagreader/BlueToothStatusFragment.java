@@ -8,11 +8,15 @@ import android.os.Bundle;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.plingtech.tagreader.databinding.FragmentBlueToothStatusBinding;
+import com.polidea.rxandroidble2.RxBleConnection;
+
+import io.reactivex.disposables.Disposable;
 
 public class BlueToothStatusFragment extends DialogFragment {
     public MainActivity ma;
@@ -24,6 +28,7 @@ public class BlueToothStatusFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        String TAG = "BT Status Dialog";
         ma = (MainActivity)getActivity();
 
         // Use the Builder class for convenient dialog construction
@@ -48,9 +53,12 @@ public class BlueToothStatusFragment extends DialogFragment {
         else {
             binding.btDeviceName.setText(ma.bt.getBleDeviceName());
             binding.btDeviceMac.setText(ma.bt.getBleDeviceMac());
-            binding.btConnStatus.setText(ma.bt.getCurrentConnState().toString());
+            Disposable connDisposable = ma.bt.subscribeBtConnState().subscribe(c -> binding.btConnStatus.setText(c.toString()), throwable -> Log.d(TAG, "RSSI observable error: "+throwable));
         }
-        //binding.btStatusDialog.append(" RSSI: "+ma.bt.getBleDevice().toString());
+
+        if (ma.bt.getCurrentConnState() == RxBleConnection.RxBleConnectionState.CONNECTED) {
+            Disposable rssidisposable = ma.bt.subscribeRssi().subscribe(i -> binding.btRssi.setText(i.toString()), throwable -> Log.d(TAG, "RSSI observable error: "+throwable));
+        }
 
         // Create the AlertDialog object and return it
         return builder.create();

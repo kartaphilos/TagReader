@@ -198,13 +198,22 @@ public class BlueToothStuff {
                            this::onConnectionStateFailure);
     }
 
+    public Observable<RxBleConnection.RxBleConnectionState> subscribeBtConnState () {
+        return bleDevice.observeConnectionStateChanges().compose(ReplayingShare.instance());
+    }
+
     // Connect & Subscribe
     private void connectTagReader() {
         Log.d(TAG, "BLE connectTagReader start");
-        connectionObservable =  bleDevice.establishConnection(true).compose(ReplayingShare.instance());
+        connectionObservable =  bleDevice
+                                    .establishConnection(false)
+                                    .retry()
+                                    .repeat()
+                                    .compose(ReplayingShare.instance());
 
         Disposable disp1 = connectionObservable
                 .flatMap(rxBleConnection -> rxBleConnection.setupNotification(tagsCharUuid))
+                .repeat()
                 .flatMap(notificationObservable -> notificationObservable)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
@@ -212,14 +221,15 @@ public class BlueToothStuff {
                 //.subscribe(this::subscribeToTagsRead, this::onConnectionFailure);
         bigDisposable.add(disp1);
 
-        Disposable disp2 = connectionObservable
+        Log.d(TAG, "BLE connectTagReader finish");
+    }
+
+    public Observable<Integer> subscribeRssi() {
+        return  connectionObservable
                 .flatMap(rxBleConnection -> // Set desired interval.
                         Observable.interval(1, SECONDS).flatMapSingle(sequence -> rxBleConnection.readRssi()))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateRssi, this::onConnectionFailure);
-        bigDisposable.add(disp2);
+                .repeat();
 
-        Log.d(TAG, "BLE connectTagReader finish");
     }
 
     private void updateRssi(Integer rssi) {
@@ -293,6 +303,7 @@ public class BlueToothStuff {
     // Cleanup
     void cleanup() {
         Log.i(TAG, "Cleanning up disposables");
+        bigDisposable.dispose();
         disposePerms();
         disposeScan();
         disposeConnection();
