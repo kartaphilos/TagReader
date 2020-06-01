@@ -31,9 +31,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Predicate;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -76,6 +78,8 @@ public class BlueToothStuff {
     private Observable<RxBleConnection> connectionObservable;
     private RxBleClient rxBleClient;
     private RxBleDevice bleDevice = null;
+    private Single<RxBleDevice> bleDeviceObs;
+
     private RxBleConnection.RxBleConnectionState currentConnState = RxBleConnection.RxBleConnectionState.DISCONNECTED;
 
     //BT STATUS CONSTS
@@ -152,6 +156,60 @@ public class BlueToothStuff {
                 });
     }
 
+    // Stackoverflow post for reconnect and BT on/off logic  (Next 4 methods)
+    // https://stackoverflow.com/questions/47670741/rxandroidble-auto-connect-issue
+
+    private Observable<Boolean> canUseBle() {
+        return rxBleClient.observeStateChanges()
+                .share() // share observing state changes
+                .startWith(Observable.fromCallable(() -> rxBleClient.getState())) // on each subscription emit the current state
+                .map(state -> state == RxBleClient.State.READY); // map to `true` when ready
+    }
+
+    Single<RxBleDevice> scanSingleDevice() {
+        return rxBleClient.scanBleDevices( // scan the device
+                new ScanSettings.Builder().build(),
+                new ScanFilter.Builder().setDeviceName(tagDeviceName).build()
+                )
+                .map(ScanResult::getBleDevice)
+                .take(1) // after the first device being scanned stop the scan
+                .singleOrError();
+    }
+
+    private Observable<Void> connectAndDoStuff(RxBleDevice bleDevice) {
+        connectionStateWatcher(bleDevice); //Setup watcher for BLE connection state changes
+
+        return bleDevice.establishConnection(false)
+                .flatMap(rxBleConnection -> {  // do your stuff
+                     rxBleConnection.setupNotification(tagsCharUuid)
+                            .flatMap(notificationObservable -> notificationObservable)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(this::onNotificationReceived, this::onNotificationSetupFailure);
+                    return Observable.<Void>empty();
+                })
+                .repeat(); // if any error (going out of range) will happen then resubscribe from `.establishConnection()`
+    }
+
+    void connectTagReader2(TagsListFragment ctx) {
+        ctxFrag = ctx; // Messy - its for referencing recycler view in Fragment
+
+        Observable<Boolean> canUseBleObservable = canUseBle();
+        //connectionDisposable
+        scanSingleDevice()
+                .flatMapObservable(this::connectAndDoStuff) // when scanned connect and do your stuff
+                .takeUntil(canUseBleObservable.filter(isReady -> !isReady)) // if the BLE will be not ready (off) then unsubscribe from scanning and connecting
+                .delaySubscription(canUseBleObservable.filter(isReady -> isReady)) // delay subscription to scanning and connecting till BLE is ready (subscribing goes from bottom to top)
+                .retry() // if scan will emit an error (connection should not as it has `.retry()`) just resubscribe to the upstream
+                .repeatWhen(observable -> observable) // if the upstream will complete (due to `.takeUntil()` as `connectAndDoStuff` does not complete on it's own)—resubscribe to the upstream
+                .subscribe(
+                    aVoid -> { Log.d("Connect2", "What's in subscribe? "+aVoid); } // `aVoid` should be changed to your model/events emitted by `.connectAndDoStuff`
+                    // throwable -> {  } => should not happen since there is `retry()` in the upstream
+                );
+    }
+    // End of SO example
+
+
+
     // Scan Devices
     void scanBleDevices(TagsListFragment ctx) {
         Log.d(TAG, "scanBleDevices() start");
@@ -181,7 +239,7 @@ public class BlueToothStuff {
             if (bleDevice == null) {
                 bleDevice = result.getBleDevice();
                 Log.i(TAG, "Scan: Tag Reader Detail: "+result.toString());
-                connectionStateWatcher(); //Setup watcher for BLE connection state changes
+                connectionStateWatcher(bleDevice); //Setup watcher for BLE connection state changes
                 connectTagReader(); // Connect to reader
             } else {
                 Log.i(TAG, "Settle Down! - already discovered Tag Reader");
@@ -189,7 +247,7 @@ public class BlueToothStuff {
         }
     }
 
-    private void connectionStateWatcher () {
+    private void connectionStateWatcher (RxBleDevice bleDevice) {
         Log.i(TAG, "BLE connection state change setup started");
         // Note: it is meant for UI updates only — one should not observeConnectionStateChanges() with BLE connection logic
         connStateDisposable = bleDevice.observeConnectionStateChanges()

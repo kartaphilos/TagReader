@@ -92,8 +92,11 @@ public class TagsListFragment extends Fragment {
         totalCountView = binding.totalCount;
         totalCountView.setText(getString(R.string.no_tags_msg));
 
-        Log.d(TAG, "Start BLE scan & connect");
-        ma.bt.scanBleDevices(tagsFrag);
+        //Log.d(TAG, "Start BLE scan & connect");
+        //ma.bt.scanBleDevices(tagsFrag);
+        Log.d(TAG, "Scan, connect, subscribe, repeat");
+        ma.bt.connectTagReader2(tagsFrag);
+
 
     }
 

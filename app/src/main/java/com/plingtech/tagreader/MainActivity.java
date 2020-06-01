@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         bt.btLogging();
         Log.d(TAG, "Get permissions"); //TODO: Its an observable so perms won't complete for a long time. Will fail on new app
         bt.btPermissions();
+        //Log.d(TAG, "Scan, connect, subscribe, repeat");
+        //bt.connectTagReader2();
 
     }
 
