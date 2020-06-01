@@ -159,6 +159,26 @@ public class MainActivity extends AppCompatActivity {
         return btIcon;
     }
 
+    // Code to double back tap to exit (avoiding accidental exits)
+    private static final int TIME_INTERVAL = 2000; // # milliseconds, desired time passed between two back presses.
+    private long backPressed;
+    private Toast exitToast;
+
+    @Override
+    public void onBackPressed()
+    {
+        if (backPressed + TIME_INTERVAL > System.currentTimeMillis())
+        {
+            exitToast.cancel();
+            super.onBackPressed();
+            return;
+        } else {
+            backPressed = System.currentTimeMillis();
+            exitToast = Toast.makeText(getBaseContext(), "Tap back again to exit", Toast.LENGTH_SHORT);
+            exitToast.show();
+        }
+    }
+
     @Override
     public void onPause() {
         super.onPause();
