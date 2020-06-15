@@ -14,8 +14,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 import com.plingtech.tagreader.databinding.FragmentTagsListBinding;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,6 +39,7 @@ public class TagsListFragment extends Fragment {
     private static final String TAG = "TagListFrag";
     private FragmentTagsListBinding binding;
     private RecyclerView.LayoutManager layoutManager;
+    TagViewModel mTagViewModel;
     public ScannedTagsAdapter adapter;
     public TagsListFragment tagsFrag;
     public MainActivity ma;
@@ -82,15 +87,23 @@ public class TagsListFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
-        List<ScannedTag> input = new ArrayList<>();
-        ScannedTag notags = new ScannedTag(0, "", "", "00:00",0);
-        Log.d(TAG,"notag: "+notags.toString());
-        input.add(notags);
+        //List<ScannedTag> input = new ArrayList<>();
+        //ScannedTag notags = new ScannedTag(0, "", "", "00:00",0);
+        //Log.d(TAG,"notag: "+notags.toString());
+        //input.add(notags);
+
+
         Log.d(TAG, "setting adaptor");
-        adapter = new ScannedTagsAdapter(input);
+        //adapter = new ScannedTagsAdapter(input);
+        adapter = new ScannedTagsAdapter(getContext());
         recyclerView.setAdapter(adapter);
         totalCountView = binding.totalCount;
         totalCountView.setText(getString(R.string.no_tags_msg));
+
+        mTagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
+        mTagViewModel.getAllTags().observe(getViewLifecycleOwner(), tags -> {
+            adapter.setTags(tags);
+        });
 
         //Log.d(TAG, "Start BLE scan & connect");
         //ma.bt.scanBleDevices(tagsFrag);
@@ -102,15 +115,19 @@ public class TagsListFragment extends Fragment {
 
     void tagItemDataBuild(String rfid) {
         String nlis = "No NLIS info";
-        String ts = addScannedTime();
+        Date ts = addScannedTime();
+
+        /*
         if (!adapter.alreadyScanned(rfid, ts)) {
             adapter.addTag(new ScannedTag(1, rfid, nlis, ts, decodeStockType(nlis)));
             totalCountView.setText(String.valueOf(++totalDistinct));
         }
+        */
+        mTagViewModel.insertTag(new ScannedTag(ts, ts, rfid, nlis, decodeStockType(nlis)));
         mp.start();
     }
 
-    private String addScannedTime() {  // Add scan time to tag object
+    private Date addScannedTime() {  // Add scan time to tag object
         Locale l = Locale.getDefault();
         Log.i(TAG, "Locale: "+l );
         Date ts = Calendar.getInstance().getTime();
@@ -119,7 +136,8 @@ public class TagsListFragment extends Fragment {
         Log.i(TAG, "Date: "+dmy.format(ts) );
         SimpleDateFormat hms = new SimpleDateFormat("HH:mm:ss", l);
         Log.i(TAG, "Time: "+hms.format(ts) );
-        return hms.format(ts);
+        //return hms.format(ts);
+        return ts;
     }
 
     private int decodeStockType(String nlis) {
@@ -128,7 +146,7 @@ public class TagsListFragment extends Fragment {
     }
 
     private void copyTagRfidsToClipboard() {
-        List<String> rfids = adapter.getAllTagRfids();
+        List<String> rfids = mTagViewModel.getAllRfid();
         ClipData cd;
         String rfidCopy = TextUtils.join("\n", rfids);
         cd = ClipData.newPlainText("text",rfidCopy);

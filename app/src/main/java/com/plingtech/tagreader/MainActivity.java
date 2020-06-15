@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.View;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "getActivity context?");
         MainActivity.context = this;
         cm = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);;
+
 
         Log.d(TAG, "Create btStuff singleton");
         bt = new BlueToothStuff(this);
