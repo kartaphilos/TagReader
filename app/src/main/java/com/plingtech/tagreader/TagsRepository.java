@@ -12,16 +12,20 @@ public class TagsRepository {
 
     private ScannedTagDao mTagDao;
     private LiveData<List<ScannedTag>> mAllTags;
+    private LiveData<Integer> mTagCount;
 
     TagsRepository(Application application) {
         TagsDatabase db = TagsDatabase.getDatabase(application);
         mTagDao = db.scannedTagDao();
         mAllTags = mTagDao.getAllTags();
+        mTagCount = mTagDao.getTagCount();
     }
 
     LiveData<List<ScannedTag>> getAllTags() {
         return mAllTags;
     }
+
+    LiveData<Integer> getTagCount() { return mTagCount; }
 
     void insert(ScannedTag tag) {
         TagsDatabase.databaseExecutor.execute(() -> {

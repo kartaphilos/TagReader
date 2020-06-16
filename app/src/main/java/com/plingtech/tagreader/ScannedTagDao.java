@@ -23,6 +23,9 @@ public interface ScannedTagDao {
     @Query("SELECT * FROM tags_table ORDER BY timestamp ASC")
     LiveData<List<ScannedTag>> getAllTags();
 
+    @Query("SELECT COUNT(DISTINCT rfid) FROM tags_table;")
+    LiveData<Integer> getTagCount();
+
     @Query("SELECT rfid FROM tags_table GROUP BY rfid")
     List<String> getAllRfid();  //For clipboard copy
 }

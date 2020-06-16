@@ -15,14 +15,18 @@ public class TagViewModel extends AndroidViewModel {
     private static final String TAG = "TagsViewModel";
     private TagsRepository mRepository;
     private LiveData<List<ScannedTag>> mAllTags;
+    private LiveData<Integer> mTagCount;
 
     public TagViewModel (Application application) {
         super(application);
         mRepository = new TagsRepository(application);
         mAllTags = mRepository.getAllTags();
+        mTagCount = mRepository.getTagCount();
     }
 
     LiveData<List<ScannedTag>> getAllTags() { return mAllTags; }
+
+    LiveData<Integer> getTagCount() { return mTagCount; }
 
     List<String> getAllRfid() throws ExecutionException, InterruptedException { return mRepository.getAllRfid(); }
 

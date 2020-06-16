@@ -99,16 +99,20 @@ public class TagsListFragment extends Fragment {
         //input.add(notags);
 
 
-        Log.d(TAG, "setting adaptor");
+        Log.d(TAG, "setting recycler adaptor");
         //adapter = new ScannedTagsAdapter(input);
         adapter = new ScannedTagsAdapter(getContext());
         recyclerView.setAdapter(adapter);
-        totalCountView = binding.totalCount;
-        totalCountView.setText(getString(R.string.no_tags_msg));
-
         mTagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
         mTagViewModel.getAllTags().observe(getViewLifecycleOwner(), tags -> {
             adapter.setTags(tags);
+        });
+
+        Log.d(TAG, "setting totalCountView");
+        totalCountView = binding.totalCount;
+        totalCountView.setText(getString(R.string.no_tags_msg));
+        mTagViewModel.getTagCount().observe(getViewLifecycleOwner(), count -> {
+            totalCountView.setText("Unique Tags: "+count.toString());
         });
 
         //Log.d(TAG, "Start BLE scan & connect");
