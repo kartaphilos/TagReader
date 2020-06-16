@@ -1,9 +1,6 @@
 package com.plingtech.tagreader;
 
-import android.Manifest;
 import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -14,25 +11,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.plingtech.tagreader.databinding.FragmentTagsListBinding;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class TagsListFragment extends Fragment {
@@ -74,10 +63,13 @@ public class TagsListFragment extends Fragment {
         Log.d(TAG, "binding.fab");
         binding.fabCopy.setOnClickListener(fabv -> {
                     try {
-                        copyTagRfidsToClipboard();
-                        Snackbar.make(
-                                fabv,getString(R.string.clipboard_copy),
-                                Snackbar.LENGTH_LONG)
+                        String msg;
+                        if (copyTagRfidsToClipboard()) {
+                            msg = getString(R.string.clipboard_copy);
+                        } else {
+                            msg = getString(R.string.clipboard_no_copy);
+                        }
+                        Snackbar.make(fabv, msg, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
@@ -118,19 +110,13 @@ public class TagsListFragment extends Fragment {
     }
 
     void tagItemDataBuild(String rfid) {
-        String nlis = "No NLIS info";
-        Date ts = addScannedTime();
-
-        /*
-        if (!adapter.alreadyScanned(rfid, ts)) {
-            adapter.addTag(new ScannedTag(1, rfid, nlis, ts, decodeStockType(nlis)));
-            totalCountView.setText(String.valueOf(++totalDistinct));
-        }
-        */
+        String nlis = "";
+        Date ts = Calendar.getInstance().getTime();
         mTagViewModel.insertTag(new ScannedTag(ts, ts, rfid, nlis, decodeStockType(nlis)));
         mp.start();
     }
 
+    /*
     private Date addScannedTime() {  // Add scan time to tag object
         Locale l = Locale.getDefault();
         Log.i(TAG, "Locale: "+l );
@@ -143,25 +129,30 @@ public class TagsListFragment extends Fragment {
         //return hms.format(ts);
         return ts;
     }
+    */
 
     private int decodeStockType(String nlis) {
         //Do NLIS lookup and decode nlis to stocktype, colour, ....
         return 0;
     }
 
-    private void copyTagRfidsToClipboard() throws ExecutionException, InterruptedException {
+    private boolean copyTagRfidsToClipboard() throws ExecutionException, InterruptedException {
         List<String> rfids = mTagViewModel.getAllRfid();
         Log.d(TAG,"rfids: "+rfids);
-        ClipData cd;
-        String rfidCopy = TextUtils.join("\n", rfids);
-        cd = ClipData.newPlainText("text",rfidCopy);
-        ma.cm.setPrimaryClip(cd);
+        if (rfids != null) {
+            ClipData cd;
+            String rfidCopy = TextUtils.join("\n", rfids);
+            cd = ClipData.newPlainText("text", rfidCopy);
+            ma.cm.setPrimaryClip(cd);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        //ma.tags = adapter.data;
         mp.stop(); // Stop media player
         binding = null;
     }

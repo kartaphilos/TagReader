@@ -7,6 +7,7 @@
 
     <string name="no_tags_msg">Waiting for Tags</string>
     <string name="clipboard_copy">Tags copied to clipboard</string>
+    <string name="clipboard_no_copy">No Tags to copy</string>
     <string name="action_newsession">New Session</string>
     <string name="action_savesession">Save Session</string>
     <string name="action_copy">Copy Tags to Clipboard</string>
