@@ -6,11 +6,16 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,6 +42,11 @@ public class TagsListFragment extends Fragment {
     private TextView totalCountView;
     private int totalDistinct = 0;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView (LayoutInflater inflater,
@@ -48,6 +58,31 @@ public class TagsListFragment extends Fragment {
         tagsFrag = this;
         Log.d(TAG, "onCreateView complete");
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_tagslist, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        String TAG = "OptionsMenuClicked";
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.copy_session:
+                Log.d(TAG,"Copy clicked");
+                //Copy clipboard items
+                return true;
+            case R.id.new_session:
+                Log.d(TAG,"New clicked");
+                mTagViewModel.deleteAllTags();
+                return true;
+            default:
+                Log.d(TAG,"Nothing in this part of the menu");
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

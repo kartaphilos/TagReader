@@ -18,7 +18,7 @@ public interface ScannedTagDao {
     void insertTag(ScannedTag tag);
 
     @Query("DELETE FROM tags_table")
-    void deleteAll();
+    void deleteAllTags();
 
     @Query("SELECT COUNT(rfid), rfid, time_scanned FROM tags_table GROUP BY rfid ORDER BY time_scanned ASC")
     LiveData<List<TagView>> getTagsToView();

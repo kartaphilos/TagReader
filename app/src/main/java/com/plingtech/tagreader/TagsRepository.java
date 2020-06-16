@@ -33,6 +33,12 @@ public class TagsRepository {
         });
     }
 
+    void deleteAllTags() {
+        TagsDatabase.databaseExecutor.execute(() -> {
+            mTagDao.deleteAllTags();
+        });
+    }
+
     public List<ScannedTag> getAllTags() throws ExecutionException, InterruptedException {
         Future<List<ScannedTag>> allTags = TagsDatabase.databaseExecutor.submit(() -> mTagDao.getAllTags());
         return allTags.get();

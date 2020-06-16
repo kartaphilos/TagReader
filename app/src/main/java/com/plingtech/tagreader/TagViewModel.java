@@ -38,6 +38,11 @@ public class TagViewModel extends AndroidViewModel {
         mRepository.insert(tag);
     }
 
+    public void deleteAllTags() {
+        Log.d(TAG, "Deleting All Tags");
+        mRepository.deleteAllTags();
+    }
+
     /*
     boolean alreadyScanned(String rfid, String ts) {
         Iterator<ScannedTag> it = mRepository.getAllTags().iterator();
