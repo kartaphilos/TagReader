@@ -24,5 +24,5 @@ public interface ScannedTagDao {
     LiveData<List<ScannedTag>> getAllTags();
 
     @Query("SELECT rfid FROM tags_table GROUP BY rfid")
-    List<String> getAllRfid();
+    List<String> getAllRfid();  //For clipboard copy
 }

@@ -5,6 +5,8 @@ import android.app.Application;
 import androidx.lifecycle.LiveData;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class TagsRepository {
 
@@ -21,11 +23,15 @@ public class TagsRepository {
         return mAllTags;
     }
 
-    List<String> getAllRfid() { return mTagDao.getAllRfid(); }
-
     void insert(ScannedTag tag) {
-        TagsDatabase.databaseWriteExecutor.execute(() -> {
+        TagsDatabase.databaseExecutor.execute(() -> {
             mTagDao.insertTag(tag);
         });
     }
+
+    public List<String> getAllRfid() throws ExecutionException, InterruptedException {
+        Future<List<String>> getAllRfids = TagsDatabase.databaseExecutor.submit(() -> mTagDao.getAllRfid());
+        return getAllRfids.get();
+    }
+
 }

@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class TagViewModel extends AndroidViewModel {
 
@@ -23,7 +24,7 @@ public class TagViewModel extends AndroidViewModel {
 
     LiveData<List<ScannedTag>> getAllTags() { return mAllTags; }
 
-    List<String> getAllRfid() { return mRepository.getAllRfid(); }
+    List<String> getAllRfid() throws ExecutionException, InterruptedException { return mRepository.getAllRfid(); }
 
     public void insertTag (ScannedTag tag) {
         Log.d(TAG, "Adding tag: "+tag.toString());

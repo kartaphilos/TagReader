@@ -18,7 +18,7 @@ public abstract class TagsDatabase extends RoomDatabase {
 
     private static volatile TagsDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
-    static final ExecutorService databaseWriteExecutor =
+    static final ExecutorService databaseExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     static TagsDatabase getDatabase(final Context context) {

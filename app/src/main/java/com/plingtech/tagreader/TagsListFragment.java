@@ -33,6 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class TagsListFragment extends Fragment {
 
@@ -72,13 +73,18 @@ public class TagsListFragment extends Fragment {
         */
         Log.d(TAG, "binding.fab");
         binding.fabCopy.setOnClickListener(fabv -> {
-                            copyTagRfidsToClipboard();
-                            Snackbar.make(
-                                    fabv,getString(R.string.clipboard_copy),
-                                    Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
-                            }
-            );
+                    try {
+                        copyTagRfidsToClipboard();
+                        Snackbar.make(
+                                fabv,getString(R.string.clipboard_copy),
+                                Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+        });
 
         Log.d(TAG, "MediaPlayer create");
         mp = MediaPlayer.create(ma, R.raw.slow_sabre);
@@ -145,8 +151,9 @@ public class TagsListFragment extends Fragment {
         return 0;
     }
 
-    private void copyTagRfidsToClipboard() {
+    private void copyTagRfidsToClipboard() throws ExecutionException, InterruptedException {
         List<String> rfids = mTagViewModel.getAllRfid();
+        Log.d(TAG,"rfids: "+rfids);
         ClipData cd;
         String rfidCopy = TextUtils.join("\n", rfids);
         cd = ClipData.newPlainText("text",rfidCopy);
