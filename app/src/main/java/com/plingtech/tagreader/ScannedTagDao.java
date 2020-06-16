@@ -20,11 +20,14 @@ public interface ScannedTagDao {
     @Query("DELETE FROM tags_table")
     void deleteAll();
 
-    @Query("SELECT * FROM tags_table ORDER BY timestamp ASC")
-    LiveData<List<ScannedTag>> getAllTags();
+    @Query("SELECT COUNT(rfid), rfid, time_scanned FROM tags_table GROUP BY rfid ORDER BY time_scanned ASC")
+    LiveData<List<TagView>> getTagsToView();
 
     @Query("SELECT COUNT(DISTINCT rfid) FROM tags_table;")
     LiveData<Integer> getTagCount();
+
+    @Query("SELECT * FROM tags_table ORDER BY time_scanned ASC")
+    List<ScannedTag> getAllTags();
 
     @Query("SELECT rfid FROM tags_table GROUP BY rfid")
     List<String> getAllRfid();  //For clipboard copy

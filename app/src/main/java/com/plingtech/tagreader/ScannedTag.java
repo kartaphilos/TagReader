@@ -12,13 +12,14 @@ import java.util.Date;
 public class ScannedTag {
 
     @PrimaryKey (autoGenerate = true)
-    private int scanId;
+    private int id;
 
     @NonNull
     private Date session;
 
     @NonNull
-    private Date timestamp;
+    @ColumnInfo (name = "time_scanned")
+    private Date timeScanned;
 
     @NonNull
     private String rfid;
@@ -32,20 +33,20 @@ public class ScannedTag {
     static final int GOATS = 3;
     static final int PETS = 4;
 
-    public ScannedTag(Date session, Date timestamp, String rfid, String nlis, int type) {
+    public ScannedTag(Date session, Date timeScanned, String rfid, String nlis, int type) {
         this.session = session;
-        this.timestamp = timestamp;
+        this.timeScanned = timeScanned;
         this.rfid = rfid;
         this.nlis = nlis;
         this.type = type;
     }
 
-    public int getScanId() { return scanId; }
+    public int getId() { return id; }
     public Date getSession() {
         return session;
     }
-    public Date getTimestamp() {
-        return timestamp;
+    public Date getTimeScanned() {
+        return timeScanned;
     }
     public String getRfid() {
             return this.rfid;
@@ -57,14 +58,14 @@ public class ScannedTag {
         return type;
     }
 
-    public void setScanId (int i) {
-        scanId = i;
+    public void setId (int i) {
+        id = i;
     }
     public void setSession (Date s) {
         session = s;
     }
-    public void setTimestamp (Date t) {
-        timestamp = t;
+    public void setTimeScanned (Date t) {
+        timeScanned = t;
     }
     public void setRfid(String r) {
         rfid = r;
@@ -79,9 +80,9 @@ public class ScannedTag {
     @Override
     public String toString() {
         return "ScannedTag{"
-                + "ScanID="+ scanId
+                + "ID="+ id
                 + ", Session="+ session
-                + ", timestamp=" + timestamp
+                + ", timeScanned=" + timeScanned
                 + ", tagRfid=" + rfid
                 + ", NLIS=" + nlis
                 + ", stockType=" + type

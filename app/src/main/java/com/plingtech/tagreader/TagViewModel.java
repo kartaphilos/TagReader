@@ -14,19 +14,22 @@ public class TagViewModel extends AndroidViewModel {
 
     private static final String TAG = "TagsViewModel";
     private TagsRepository mRepository;
-    private LiveData<List<ScannedTag>> mAllTags;
+    //private LiveData<List<ScannedTag>> mAllTags;
+    private LiveData<List<TagView>> mTagsToView;
     private LiveData<Integer> mTagCount;
 
     public TagViewModel (Application application) {
         super(application);
         mRepository = new TagsRepository(application);
-        mAllTags = mRepository.getAllTags();
+        mTagsToView = mRepository.getTagsToView();
         mTagCount = mRepository.getTagCount();
     }
 
-    LiveData<List<ScannedTag>> getAllTags() { return mAllTags; }
+    LiveData<List<TagView>> getTagsToView() { return mTagsToView; }
 
     LiveData<Integer> getTagCount() { return mTagCount; }
+
+    List<ScannedTag> getAllTags() throws ExecutionException, InterruptedException { return mRepository.getAllTags(); }
 
     List<String> getAllRfid() throws ExecutionException, InterruptedException { return mRepository.getAllRfid(); }
 

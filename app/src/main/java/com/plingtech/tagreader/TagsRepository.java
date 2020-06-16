@@ -11,19 +11,19 @@ import java.util.concurrent.Future;
 public class TagsRepository {
 
     private ScannedTagDao mTagDao;
-    private LiveData<List<ScannedTag>> mAllTags;
+    private LiveData<List<TagView>> mTagsToView;
     private LiveData<Integer> mTagCount;
 
     TagsRepository(Application application) {
         TagsDatabase db = TagsDatabase.getDatabase(application);
         mTagDao = db.scannedTagDao();
-        mAllTags = mTagDao.getAllTags();
+        mTagsToView = mTagDao.getTagsToView();
         mTagCount = mTagDao.getTagCount();
     }
 
-    LiveData<List<ScannedTag>> getAllTags() {
-        return mAllTags;
-    }
+    //LiveData<List<ScannedTag>> getAllTags() { return mAllTags; }
+
+    LiveData<List<TagView>> getTagsToView() { return mTagsToView; }
 
     LiveData<Integer> getTagCount() { return mTagCount; }
 
@@ -31,6 +31,11 @@ public class TagsRepository {
         TagsDatabase.databaseExecutor.execute(() -> {
             mTagDao.insertTag(tag);
         });
+    }
+
+    public List<ScannedTag> getAllTags() throws ExecutionException, InterruptedException {
+        Future<List<ScannedTag>> allTags = TagsDatabase.databaseExecutor.submit(() -> mTagDao.getAllTags());
+        return allTags.get();
     }
 
     public List<String> getAllRfid() throws ExecutionException, InterruptedException {

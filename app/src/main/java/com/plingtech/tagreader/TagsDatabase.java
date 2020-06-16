@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database( entities = {ScannedTag.class}, version = 2, exportSchema = false)
+@Database( entities = {ScannedTag.class}, version = 1, exportSchema = false)
 @TypeConverters({DataConverters.class})
 public abstract class TagsDatabase extends RoomDatabase {
 
